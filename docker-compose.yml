@@ -1,0 +1,25 @@
+services:
+  entropos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: entropos-router
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - TRUST_PROXY=true
+      - ENTROPOS_ADMIN_TOKEN=${ENTROPOS_ADMIN_TOKEN:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - STORAGE_ENCRYPTION_KEY=${STORAGE_ENCRYPTION_KEY:-}
+    volumes:
+      - entropos-data:/app/data
+
+volumes:
+  entropos-data:
+    driver: local

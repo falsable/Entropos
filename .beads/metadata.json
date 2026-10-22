@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "Entropos",
+  "project_id": "aad24610-0943-41a2-889b-d24f5cbd1a5b"
+}

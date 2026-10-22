@@ -1,0 +1,30 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db*
+*.migrated
+.entropos_secret
+data/.entropos_secret
+.beads-credential-key
+.beads/proxieddb/
+*.gate.lock*
+
+# Agent onboarding
+progress.md
+CLAUDE.local.md
+
+# Runtime store (carries internal calibration values; regenerated from code if missing)
+data/*_production_store.json
+.a2dlc/verdict.json
+.a2dlc/reports/
+.a2dlc/escalations.json
+.a2dlc/run/
+.beads/hooks/

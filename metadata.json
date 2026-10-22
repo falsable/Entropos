@@ -1,0 +1,6 @@
+{
+  "name": "Entropos - Universal MCP Router for Claude, OpenAI & Gemini",
+  "description": "Connect Claude Code, Cursor, or any AI tool via Model Context Protocol (MCP). Automatically routes every prompt to the optimal model for maximum speed and cost savings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
