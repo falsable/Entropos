@@ -1,29 +1,75 @@
-# Entropos (`@falsable/entropos`)
+<div align="center">
 
-**Universal LLM Complexity Router, MCP Gateway & Native Anthropic/OpenAI Proxy**  
-*Information-theoretic prompt complexity probing (Shannon entropy + structural branching) fused with closed-loop Beta-Bernoulli Thompson Sampling.*
+<img src="docs/assets/entropos-pipeline-hero.jpg" alt="ENTROPOS // ADAPTIVE LLM ROUTER — Sub-Millisecond Shannon Entropy Router & MCP Gateway" width="100%" />
+
+# ENTROPOS — Adaptive LLM Complexity Router & MCP Gateway
 
 [![npm version](https://img.shields.io/badge/npm-@falsable%2Fentropos%20v0.1.0-cb3837?style=flat-square&logo=npm)](https://www.npmjs.com/package/@falsable/entropos)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-3b82f6.svg?style=flat-square)](LICENSE)
 [![Tests: 84 passing](https://img.shields.io/badge/tests-84%20passing-10b981.svg?style=flat-square)](#)
+[![Agent Skill: SKILL.md](https://img.shields.io/badge/agent_skill-SKILL.md-8b5cf6.svg?style=flat-square)](skills/entropos/SKILL.md)
+
+<p align="center">
+  <a href="#what-is-entropos"><b>What is Entropos?</b></a> •
+  <a href="#use-with-claude-code-gemini-cli-or-codex"><b>🤖 Use with Your AI Agent</b></a> •
+  <a href="#quick-start-npx"><b>Quick Start</b></a> •
+  <a href="#connecting-clients--agents"><b>Connect Clients</b></a> •
+  <a href="#persistence-encryption--zero-data-retention-zdr"><b>Zero Data Retention</b></a>
+</p>
+
+</div>
 
 ---
 
-**Entropos** sits between your coding agents (Claude Code, Cursor, Gemini CLI, [A2-DLC](https://github.com/falsable/a2dlc) role containers, or any MCP / OpenAI / Anthropic client) and upstream model providers. It evaluates every incoming prompt's structural complexity in sub-millisecond time and routes it to the model with the optimal quality-to-cost posterior.
+## What is `Entropos`?
+
+**`Entropos` stops AI coding agents from burning expensive flagship model tokens on trivial prompts.**
+
+When you run **Claude Code**, **Gemini CLI**, **Codex**, or **Cursor**, 60–80% of agent turns are low-complexity operations (reading files, formatting, simple edits, boilerplate) that do not require an expensive frontier reasoning model. **`Entropos` is a local MCP Gateway and drop-in Anthropic/OpenAI proxy** that optimizes cost and latency automatically:
+
+1. **Sub-Millisecond Shannon Entropy Probe:** Measures every prompt's character/token Shannon entropy, lexical diversity, and syntactic branching factor in `<1 ms`—without calling an external classifier LLM.
+2. **Closed-Loop Bayesian Thompson Sampling:** Combines complexity tiers (`low`, `medium`, `high`, `extreme`) with Beta-Bernoulli posteriors updated from real execution feedback to route each turn to the model with the best quality-to-cost ratio (Anthropic, OpenAI, Gemini, DeepSeek).
+3. **Drop-In for Every Agent + Zero Data Retention (ZDR):** Exposes a native **Anthropic Messages API** (`/v1/messages` with SSE streaming for Claude Code), an **OpenAI-compatible proxy** (`/v1/chat/completions` for Codex/Cursor), and an **MCP Server** (`/mcp`), backed by SQLite WAL with AES-256-GCM key encryption and configurable Zero Data Retention.
+
+---
+
+## 🤖 Use with Claude Code, Gemini CLI, or Codex
+
+Copy and paste this instruction directly into **Claude Code**, **Gemini CLI / Antigravity**, **OpenAI Codex**, or **Cursor** so your agent sets up and connects to `Entropos`:
+
+```text
+Set up and connect Entropos (@falsable/entropos) in this workspace:
+1. Copy the official agent skill from https://raw.githubusercontent.com/falsable/Entropos/main/skills/entropos/SKILL.md into `.agents/skills/entropos/SKILL.md` and `.claude/skills/entropos/SKILL.md`, and read it.
+2. Launch Entropos in the background with `npx @falsable/entropos --port 3000` (or `npm ci && npm run build && npm start` if working inside the Entropos repo) and verify `http://localhost:3000/healthz`.
+3. Create a workspace key via `POST http://localhost:3000/api/keys` with `{"name": "agent-client"}`.
+4. Configure our agent environment to route through Entropos (`ANTHROPIC_BASE_URL=http://localhost:3000` for Claude Code, `http://localhost:3000/v1` for OpenAI/Codex/Cursor, or `http://localhost:3000/mcp` in `mcp_config.json`).
+```
+
+### Install the Bundled Agent Skill (`SKILL.md`) Directly
+
+Equip your coding agents with [`skills/entropos/SKILL.md`](skills/entropos/SKILL.md) so they know how to query `/v1/messages`, `/v1/chat/completions`, MCP tools (`smart_generate`, `get_optimal_model`, `check_savings`), and `A2DLC_LLM=entropos`:
+
+```bash
+mkdir -p .claude/skills/entropos .agents/skills/entropos
+curl -fsSL https://raw.githubusercontent.com/falsable/Entropos/main/skills/entropos/SKILL.md -o .claude/skills/entropos/SKILL.md
+cp .claude/skills/entropos/SKILL.md .agents/skills/entropos/SKILL.md
+```
+
+---
 
 ## Quick Start (`npx`)
 
-Run the router, MCP gateway, and local telemetry console immediately without cloning:
+Run the router, MCP gateway, and local telemetry console (`http://localhost:3000/app`) immediately:
 
 ```bash
 npx @falsable/entropos --port 3000
 ```
 
-Or install from source:
+Or run from source:
 
 ```bash
 npm ci
-cp .env.example .env     # configure your upstream provider keys
+cp .env.example .env     # configure GEMINI_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY, DEEPSEEK_API_KEY
 npm run build
 npm start                # http://localhost:3000
 ```
@@ -39,6 +85,19 @@ npm start                # http://localhost:3000
 
 ---
 
+## 📊 Measured Benchmarks & Verification
+
+| Metric | Measured Result | Methodology / Verification |
+|---|---|---|
+| **In-Process Routing Overhead** (`calculateShannonEntropy` + `analyzeAndPickModel`) | **`0.019 ms` (`19 µs`) p50** · **`0.030 ms` p95** · **`0.052 ms` p99** | $n = 5,000$ iterations across mixed-complexity prompts (`src/lib/routerEngine.ts`, Node.js v24) |
+| **External Classifier LLM Calls Required** | **`0`** | Pure mathematical probe + Beta-Bernoulli Thompson Sampling in-process |
+| **Full-Lifecycle A2-DLC Slice Cost** (`A2DLC_LLM=entropos`) | **`$0.025 – $0.069 USD` per slice** | Measured across 6–8 role container dispatches (`N=1` & `N=2` tracks, Stages −1 to 7) |
+| **Automated Contract, Security & ZDR Suite** | **`84 / 84` passing (`100%`)** | `npm test` — verifies Anthropic SSE streaming, OpenAI proxy, MCP tools, AES-256-GCM encryption at rest, SQLite WAL, and strict ZDR (`zero_retention`) |
+
+> *Scope note:* Exact percentage cost savings on interactive coding sessions depend on your prompt complexity distribution (fraction of low/medium turns vs. deep reasoning turns) and configured provider catalog (`cost_saver` vs. `balanced`).
+
+---
+
 ## Connecting Clients & Agents
 
 ### 1. Claude Code & Native Anthropic Clients (`/v1/messages`)
@@ -51,7 +110,7 @@ claude
 ```
 
 ### 2. OpenAI-Compatible Clients (`/v1/chat/completions`)
-Point Cursor, Continue, or any OpenAI SDK client to `/v1`:
+Point Codex, Cursor, Continue, or any OpenAI SDK client to `/v1`:
 - `GET http://localhost:3000/v1/models`
 - `POST http://localhost:3000/v1/chat/completions` (`Authorization: Bearer <workspace-key>`)
 

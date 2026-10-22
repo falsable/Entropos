@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080B14"/>
+      <stop offset="50%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#061D24"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="50%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#131D33" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#0A101E" stop-opacity="0.92"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1E293B" stroke-width="0.7" stroke-opacity="0.55"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="380" rx="16" fill="url(#bg)"/>
+  <rect width="1200" height="380" rx="16" fill="url(#grid)"/>
+  <rect x="1.5" y="1.5" width="1197" height="377" rx="14.5" fill="none" stroke="url(#accent)" stroke-opacity="0.35" stroke-width="2"/>
+
+  <!-- Left Brand & Value Prop -->
+  <g transform="translate(56, 54)">
+    <rect x="0" y="0" width="212" height="28" rx="14" fill="#064E3B" stroke="#10B981" stroke-width="1"/>
+    <text x="106" y="18" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="700" fill="#6EE7B7" text-anchor="middle" letter-spacing="1.1">FALSABLE // @falsable/entropos</text>
+
+    <!-- Title -->
+    <text x="0" y="84" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="54" font-weight="800" fill="#F8FAFC" letter-spacing="-1">Entropos</text>
+    <text x="235" y="84" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="22" font-weight="600" fill="url(#accent)">v0.1.0</text>
+
+    <!-- Subtitle -->
+    <text x="0" y="122" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="19" font-weight="600" fill="#E2E8F0">
+      Entropy-Driven LLM Complexity Router &amp; MCP Gateway
+    </text>
+    <text x="0" y="152" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14.5" fill="#94A3B8">
+      Stop burning flagship model tokens on simple agent turns. Probes prompt
+    </text>
+    <text x="0" y="174" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14.5" fill="#94A3B8">
+      Shannon entropy in &lt;1ms and routes via Bayesian Thompson Sampling.
+    </text>
+
+    <!-- Agent Compatibility Pills -->
+    <g transform="translate(0, 206)">
+      <rect x="0" y="0" width="144" height="32" rx="6" fill="#111827" stroke="#334155"/>
+      <text x="72" y="20" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="600" fill="#38BDF8" text-anchor="middle">Anthropic /v1/messages</text>
+
+      <rect x="154" y="0" width="126" height="32" rx="6" fill="#111827" stroke="#334155"/>
+      <text x="217" y="20" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="600" fill="#A78BFA" text-anchor="middle">OpenAI /v1 Proxy</text>
+
+      <rect x="290" y="0" width="116" height="32" rx="6" fill="#111827" stroke="#334155"/>
+      <text x="348" y="20" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="600" fill="#34D399" text-anchor="middle">MCP Server</text>
+
+      <rect x="416" y="0" width="132" height="32" rx="6" fill="#1E1B4B" stroke="#6366F1"/>
+      <text x="482" y="20" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700" fill="#A5B4FC" text-anchor="middle">Zero Retention</text>
+    </g>
+
+    <!-- Bottom Formula Bar -->
+    <text x="0" y="268" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" fill="#64748B">
+      H(X) = -Σ P(x) log₂ P(x)  │  θ_m ~ Beta(α_m, β_m)  │  SQLite WAL + AES-256-GCM
+    </text>
+  </g>
+
+  <!-- Right Routing Card -->
+  <g transform="translate(650, 42)">
+    <rect x="0" y="0" width="500" height="296" rx="12" fill="url(#cardGrad)" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- Card Header -->
+    <circle cx="22" cy="22" r="5" fill="#EF4444"/>
+    <circle cx="38" cy="22" r="5" fill="#F59E0B"/>
+    <circle cx="54" cy="22" r="5" fill="#10B981"/>
+    <text x="76" y="26" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#94A3B8">npx @falsable/entropos --port 3000</text>
+    <line x1="0" y1="42" x2="500" y2="42" stroke="#1E293B" stroke-width="1.5"/>
+
+    <g transform="translate(24, 58)">
+      <!-- Step 1 -->
+      <rect x="0" y="0" width="452" height="44" rx="8" fill="#0F172A" stroke="#06B6D4" stroke-width="1.2"/>
+      <text x="16" y="19" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700" fill="#22D3EE">1. AGENT INGRESS │ Claude Code / Cursor / Gemini / A2-DLC</text>
+      <text x="16" y="35" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" fill="#94A3B8">POST /v1/messages (SSE) • POST /v1/chat/completions • POST /mcp</text>
+
+      <!-- Step 2 -->
+      <rect x="0" y="54" width="452" height="44" rx="8" fill="#0F172A" stroke="#8B5CF6" stroke-width="1.2"/>
+      <text x="16" y="73" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700" fill="#A78BFA">2. ENTROPY PROBE │ Sub-ms Structural Complexity Score</text>
+      <text x="16" y="89" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" fill="#94A3B8">Shannon Entropy + Lexical Diversity + Syntactic Branching</text>
+
+      <!-- Step 3 -->
+      <rect x="0" y="108" width="452" height="44" rx="8" fill="#0F172A" stroke="#10B981" stroke-width="1.2"/>
+      <text x="16" y="127" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700" fill="#34D399">3. BAYESIAN BANDIT │ Closed-Loop Thompson Sampling</text>
+      <text x="16" y="143" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" fill="#94A3B8">Routes to optimal Flash/Haiku vs. Sonnet/Pro + Circuit Breaker</text>
+
+      <!-- Result Box -->
+      <rect x="0" y="166" width="452" height="54" rx="8" fill="#052E16" stroke="#10B981" stroke-width="1.5"/>
+      <text x="16" y="188" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12.5" font-weight="700" fill="#6EE7B7">✓ Routed with Zero Data Retention (ZDR) &amp; Cost Ledger</text>
+      <text x="16" y="208" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" fill="#A7F3D0">84/84 Contract &amp; Security Tests Passing  •  SKILL.md Bundled</text>
+    </g>
+  </g>
+</svg>
