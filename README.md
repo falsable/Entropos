@@ -166,3 +166,10 @@ a2dlc check      # Deterministic differential & property gate
 ## License
 
 [Apache-2.0](LICENSE). © 2026 Aldemar Hernández · [falsable](https://github.com/falsable).
+
+
+---
+
+## Trademark Disclaimer
+
+Anthropic, Claude, Claude Code, OpenAI, ChatGPT, Codex, Google, Gemini, Cursor and their respective logos are trademarks or registered trademarks of their respective owners. Entropos is an independent open-source project and is not affiliated with, endorsed by, sponsored by, or associated with Anthropic, PBC, OpenAI, Inc., Google LLC, or Anysphere, Inc.

@@ -27,7 +27,7 @@ Usage:
 
 Options:
   --port <number>       Port to listen on (default: $PORT or 3000)
-  --host <string>       Host interface (default: 0.0.0.0)
+  --host <string>       Host interface (default: 127.0.0.1)
   --help, -h            Show this help message
   --version, -v         Show version
 
@@ -54,6 +54,12 @@ if (args.includes('--version') || args.includes('-v')) {
 const portIdx = args.indexOf('--port');
 if (portIdx !== -1 && args[portIdx + 1]) {
   process.env.PORT = args[portIdx + 1];
+}
+
+// Pass host if provided via --host
+const hostIdx = args.indexOf('--host');
+if (hostIdx !== -1 && args[hostIdx + 1]) {
+  process.env.HOST = args[hostIdx + 1];
 }
 
 // Check if pre-bundled dist/server.js exists, otherwise run tsx server.ts

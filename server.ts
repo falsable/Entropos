@@ -26,6 +26,7 @@ dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '127.0.0.1';
 
 // Configurable trust proxy for reverse proxies (Cloudflare, Nginx, Traefik, Caddy)
 if (process.env.TRUST_PROXY) {
@@ -1700,8 +1701,8 @@ export async function startServer() {
     });
   }
 
-  return app.listen(PORT, () => {
-    console.log(`Entropos Server running on port ${PORT}`);
+  return app.listen(Number(PORT), HOST, () => {
+    console.log(`Entropos Server running on http://${HOST}:${PORT}`);
   });
 }
 
