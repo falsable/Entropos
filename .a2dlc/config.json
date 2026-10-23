@@ -15,5 +15,9 @@
   ],
   "agent_hook": {
     "max_blocks": 4
-  }
+  },
+  "checks": [
+    {"id": "tsc", "image": "a2dlc-check-tsc:entropos", "command": "sh /check.sh",
+     "severity": "blocking", "matches": ["**/*.ts", "**/*.tsx"], "timeout_s": 300}
+  ]
 }
