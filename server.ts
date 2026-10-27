@@ -17,7 +17,7 @@ import {
 import { bearerToken, rateLimit, requireAdmin, requireAuth, readToken } from './src/server/guards';
 import { RoutingMode, CustomRule } from './src/types/router';
 import { productionStore, verifyPassword } from './src/server/storage';
-import { dispatcher, getGeminiClient, UpstreamUnavailableError } from './src/server/dispatcher';
+import { dispatcher, getGeminiClient, requestUsesTools, UpstreamUnavailableError } from './src/server/dispatcher';
 import { calculateCostAndSavings, engineNameForLabel, providerKey, resolveModel, PROVIDER_NAMES, type ProviderId } from './src/server/modelCatalog';
 import { getAnalyticsSummary, AVAILABLE_REFERENCE_MODELS } from './src/server/analytics';
 
@@ -1203,7 +1203,10 @@ const handleAnthropicMessages = async (req: express.Request, res: express.Respon
 
   let dispatchResult;
   try {
-    dispatchResult = await dispatcher.dispatch(messages, targetModel, targetProvider, systemPrompt);
+    const maxTokens = Number.isFinite(req.body.max_tokens) && req.body.max_tokens > 0 ? Math.floor(req.body.max_tokens) : undefined;
+    dispatchResult = requestUsesTools(req.body)
+      ? await dispatcher.dispatchNative(req.body, targetModel)
+      : await dispatcher.dispatch(messages, targetModel, targetProvider, systemPrompt, { maxTokens });
   } catch (err: any) {
     if (err instanceof UpstreamUnavailableError) {
       console.warn(`/v1/messages failed, no provider answered (${err.provider}): ${err.detail}`);
@@ -1271,6 +1274,8 @@ const handleAnthropicMessages = async (req: express.Request, res: express.Respon
   res.setHeader('X-Jev-Savings-Usd', costInfo.savedUsd.toFixed(5));
 
   const messageId = 'msg_' + Math.random().toString(36).substring(2, 14);
+  const responseBlocks: any[] = dispatchResult.contentBlocks ?? [{ type: 'text', text: dispatchResult.text }];
+  const stopReason = dispatchResult.stopReason ?? 'end_turn';
 
   if (stream) {
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -1296,37 +1301,43 @@ const handleAnthropicMessages = async (req: express.Request, res: express.Respon
       },
     })}\n\n`);
 
-    // 2. content_block_start
-    res.write(`event: content_block_start\ndata: ${JSON.stringify({
-      type: 'content_block_start',
-      index: 0,
-      content_block: {
-        type: 'text',
-        text: '',
-      },
-    })}\n\n`);
-
-    // 3. content_block_delta
-    res.write(`event: content_block_delta\ndata: ${JSON.stringify({
-      type: 'content_block_delta',
-      index: 0,
-      delta: {
-        type: 'text_delta',
-        text: dispatchResult.text,
-      },
-    })}\n\n`);
-
-    // 4. content_block_stop
-    res.write(`event: content_block_stop\ndata: ${JSON.stringify({
-      type: 'content_block_stop',
-      index: 0,
-    })}\n\n`);
+    // 2-4. One content block per upstream block (text or tool_use)
+    const sseBlocks = responseBlocks;
+    sseBlocks.forEach((block: any, index: number) => {
+      if (block.type === 'tool_use') {
+        res.write(`event: content_block_start\ndata: ${JSON.stringify({
+          type: 'content_block_start',
+          index,
+          content_block: { type: 'tool_use', id: block.id, name: block.name, input: {} },
+        })}\n\n`);
+        res.write(`event: content_block_delta\ndata: ${JSON.stringify({
+          type: 'content_block_delta',
+          index,
+          delta: { type: 'input_json_delta', partial_json: JSON.stringify(block.input ?? {}) },
+        })}\n\n`);
+      } else {
+        res.write(`event: content_block_start\ndata: ${JSON.stringify({
+          type: 'content_block_start',
+          index,
+          content_block: { type: 'text', text: '' },
+        })}\n\n`);
+        res.write(`event: content_block_delta\ndata: ${JSON.stringify({
+          type: 'content_block_delta',
+          index,
+          delta: { type: 'text_delta', text: block.text },
+        })}\n\n`);
+      }
+      res.write(`event: content_block_stop\ndata: ${JSON.stringify({
+        type: 'content_block_stop',
+        index,
+      })}\n\n`);
+    });
 
     // 5. message_delta
     res.write(`event: message_delta\ndata: ${JSON.stringify({
       type: 'message_delta',
       delta: {
-        stop_reason: 'end_turn',
+        stop_reason: stopReason,
         stop_sequence: null,
       },
       usage: {
@@ -1348,13 +1359,8 @@ const handleAnthropicMessages = async (req: express.Request, res: express.Respon
     type: 'message',
     role: 'assistant',
     model: dispatchResult.actualModel,
-    content: [
-      {
-        type: 'text',
-        text: dispatchResult.text,
-      },
-    ],
-    stop_reason: 'end_turn',
+    content: responseBlocks,
+    stop_reason: stopReason,
     stop_sequence: null,
     usage: {
       input_tokens: actualPromptTokens,
