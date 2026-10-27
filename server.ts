@@ -17,6 +17,7 @@ import {
 import { bearerToken, rateLimit, requireAdmin, requireAuth, readToken } from './src/server/guards';
 import { RoutingMode, CustomRule } from './src/types/router';
 import { productionStore, verifyPassword } from './src/server/storage';
+import { monthlyBudgetGuard } from './src/server/budgetGuard';
 import { dispatcher, getGeminiClient, UpstreamUnavailableError } from './src/server/dispatcher';
 import { calculateCostAndSavings, engineNameForLabel, providerKey, resolveModel, PROVIDER_NAMES, type ProviderId } from './src/server/modelCatalog';
 import { getAnalyticsSummary, AVAILABLE_REFERENCE_MODELS } from './src/server/analytics';
@@ -230,7 +231,7 @@ function rejectMcpWithoutKey(req: express.Request, res: express.Response): boole
   return true;
 }
 
-app.post('/mcp', async (req, res) => {
+app.post('/mcp', monthlyBudgetGuard('mcp'), async (req, res) => {
   if (rejectMcpWithoutKey(req, res)) return;
   const { jsonrpc, id, method, params } = req.body;
 
@@ -999,7 +1000,7 @@ app.get('/v1/models', (req, res) => {
   });
 });
 
-app.post('/v1/chat/completions', rateLimit('v1', { windowMs: 60_000, max: 120 }), async (req, res) => {
+app.post('/v1/chat/completions', rateLimit('v1', { windowMs: 60_000, max: 120 }), monthlyBudgetGuard('openai'), async (req, res) => {
   const startTime = Date.now();
   const state = productionStore.getState();
   // Only workspace keys stored on the server are accepted; a missing key is rejected too.
@@ -1380,8 +1381,8 @@ const handleAnthropicMessages = async (req: express.Request, res: express.Respon
   });
 };
 
-app.post('/v1/messages', rateLimit('v1', { windowMs: 60_000, max: 120 }), handleAnthropicMessages);
-app.post('/messages', rateLimit('v1', { windowMs: 60_000, max: 120 }), handleAnthropicMessages);
+app.post('/v1/messages', rateLimit('v1', { windowMs: 60_000, max: 120 }), monthlyBudgetGuard('anthropic'), handleAnthropicMessages);
+app.post('/messages', rateLimit('v1', { windowMs: 60_000, max: 120 }), monthlyBudgetGuard('anthropic'), handleAnthropicMessages);
 
 
 // ----------------------------------------------------

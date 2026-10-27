@@ -128,6 +128,35 @@ When running [A2-DLC](https://github.com/falsable/a2dlc) (`a2dlc run`), role con
 
 ---
 
+## Monthly Budget Cap (`monthlyBudgetCapUsd`)
+
+`monthlyBudgetCapUsd` (default `150`, set with `POST /api/settings` and an admin token) is enforced on `POST /v1/chat/completions`, `POST /v1/messages` (and `/messages`), and the MCP `smart_generate` tool (`POST /mcp`). Spend is the sum of the measured `costUsd` already recorded in route telemetry for the current calendar month (UTC); nothing is estimated. A cap of `0` (or a non-numeric value) disables enforcement.
+
+- **Below 80% of the cap**: requests pass untouched.
+- **From 80% of the cap**: requests still pass and carry an `X-Entropos-Budget-Warning` response header with the percentage used.
+- **At or above the cap**: the request is refused with `429`, a `Retry-After` header (seconds until the reset), and a JSON body naming the cap and the spend. Nothing is sent upstream and nothing is recorded as spend.
+- **Reset**: the window is the calendar month, so on the 1st at 00:00 UTC spend counts from zero again. Raising the cap unblocks traffic immediately.
+
+Other MCP tools (`get_optimal_model`, `check_savings`) never spend and are not blocked. Requests without a valid workspace key still get `401` and never see the spend figures.
+
+```json
+{
+  "error": {
+    "type": "insufficient_quota",
+    "code": "monthly_budget_exceeded",
+    "message": "Monthly budget cap reached: $2.5000 spent of the $1.00 cap. Requests resume at 2026-11-01T00:00:00.000Z or when monthlyBudgetCapUsd is raised.",
+    "monthly_budget_cap_usd": 1,
+    "spent_usd": 2.5,
+    "period_start": "2026-10-01T00:00:00.000Z",
+    "resets_at": "2026-11-01T00:00:00.000Z"
+  }
+}
+```
+
+`/v1/messages` returns the same fields inside the Anthropic envelope (`{"type":"error","error":{"type":"rate_limit_error","code":"monthly_budget_exceeded",...}}`), and `/mcp` returns a JSON-RPC error (`code -32029`) with the fields under `error.data`.
+
+---
+
 ## Persistence, Encryption & Zero Data Retention (ZDR)
 
 `src/server/storage.ts` uses an embedded **SQLite WAL** engine (`node:sqlite` at `data/entropos.db`) for atomic $O(1)$ concurrent writes:

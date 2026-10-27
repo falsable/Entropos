@@ -1063,6 +1063,15 @@ export class ProductionStorage {
     return results;
   }
 
+  /** Sum of recorded costUsd for route logs in [fromIso, toIso) (all rows, not just the last 100). */
+  public getCostSince(fromIso: string, toIso?: string): number {
+    const row = (toIso
+      ? this.db.prepare('SELECT COALESCE(SUM(costUsd), 0) AS total FROM route_logs WHERE timestamp >= ? AND timestamp < ?').get(fromIso, toIso)
+      : this.db.prepare('SELECT COALESCE(SUM(costUsd), 0) AS total FROM route_logs WHERE timestamp >= ?').get(fromIso)
+    ) as { total: number } | undefined;
+    return Number(row?.total ?? 0);
+  }
+
   public getLogsSince(cutoffIso: string): RouteExecution[] {
     const rows = this.db.prepare(`
       SELECT rawJson
