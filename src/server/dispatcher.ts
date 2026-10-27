@@ -16,6 +16,29 @@ export interface DispatchResult {
   failoverOccurred: boolean;
   failoverReason?: string;
   usage?: TokenUsage;
+  // Native Anthropic turns only: upstream content blocks (text and tool_use) and stop reason.
+  contentBlocks?: AnthropicBlock[];
+  stopReason?: string;
+}
+
+export type AnthropicBlock =
+  | { type: 'text'; text: string }
+  | { type: 'tool_use'; id: string; name: string; input: unknown };
+
+export interface DispatchOptions {
+  maxTokens?: number;
+}
+
+// Fields of an Anthropic Messages request forwarded untouched on tool turns.
+const NATIVE_PASSTHROUGH_FIELDS = ['system', 'tools', 'tool_choice', 'temperature', 'top_p', 'top_k', 'stop_sequences'] as const;
+
+// True when the request needs a provider that speaks the Anthropic tool protocol.
+export function requestUsesTools(body: any): boolean {
+  if (Array.isArray(body?.tools) && body.tools.length > 0) return true;
+  const messages: any[] = Array.isArray(body?.messages) ? body.messages : [];
+  return messages.some(
+    (m) => Array.isArray(m?.content) && m.content.some((b: any) => b?.type === 'tool_use' || b?.type === 'tool_result')
+  );
 }
 
 // Ningun proveedor pudo responder: el endpoint devuelve un error real, nunca un texto inventado.
@@ -110,7 +133,8 @@ export class MultiProviderDispatcher {
     input: DispatchInput,
     targetModel: string,
     targetProvider: string,
-    systemInstruction?: string
+    systemInstruction?: string,
+    options: DispatchOptions = {}
   ): Promise<DispatchResult> {
     const start = Date.now();
     const messages = normalizeMessages(input, systemInstruction);
@@ -126,7 +150,7 @@ export class MultiProviderDispatcher {
       reason = `Circuit breaker open for ${PROVIDER_NAMES[entry.provider]} (consecutive failures)`;
     } else {
       try {
-        const { text, usage } = await this.call(entry, messages);
+        const { text, usage } = await this.call(entry, messages, options);
         productionStore.recordCircuitSuccess(entry.provider);
         return {
           text,
@@ -153,7 +177,7 @@ export class MultiProviderDispatcher {
       }
 
       try {
-        const { text, usage } = await this.call(fallback, messages);
+        const { text, usage } = await this.call(fallback, messages, options);
         productionStore.recordCircuitSuccess(fallback.provider);
         return {
           text,
@@ -174,9 +198,94 @@ export class MultiProviderDispatcher {
     throw new UpstreamUnavailableError(entry ? PROVIDER_NAMES[entry.provider] : targetProvider, reason);
   }
 
+  // Tool turns (Claude Code): the Anthropic body is forwarded natively. Only an Anthropic model can
+  // answer; otherwise this is a real error, never a text-only answer from another provider.
+  public async dispatchNative(body: any, targetModel: string): Promise<DispatchResult> {
+    const start = Date.now();
+    let entry = resolveModel(targetModel);
+    if (!entry || entry.provider !== 'anthropic') entry = resolveModel('Claude Sonnet 5.5');
+    if (!entry || entry.provider !== 'anthropic') {
+      throw new UpstreamUnavailableError('Anthropic', 'No Anthropic model is configured for tool requests');
+    }
+    const apiKey = providerKey('anthropic');
+    if (!apiKey) {
+      throw new UpstreamUnavailableError('Anthropic', 'Anthropic has no API key configured (required for tool requests)');
+    }
+    if (!productionStore.isCircuitAvailable('anthropic')) {
+      throw new UpstreamUnavailableError('Anthropic', 'Circuit breaker open for Anthropic (consecutive failures)');
+    }
+
+    try {
+      const passthrough = Object.fromEntries(
+        NATIVE_PASSTHROUGH_FIELDS.filter((k) => body?.[k] !== undefined).map((k) => [k, body[k]])
+      );
+      const data = await this.postAnthropic(
+        apiKey,
+        {
+          model: entry.apiModel,
+          max_tokens: Number.isFinite(body?.max_tokens) && body.max_tokens > 0 ? Math.floor(body.max_tokens) : 4096,
+          messages: body.messages,
+          ...passthrough,
+        },
+        120000
+      );
+      const blocks: any[] = Array.isArray(data?.content) ? data.content : [];
+      const contentBlocks = blocks.filter((b) => b?.type === 'text' || b?.type === 'tool_use') as AnthropicBlock[];
+      if (contentBlocks.length === 0) throw new Error(`${entry.label} returned no content`);
+      const text = contentBlocks.map((b) => (b.type === 'text' ? b.text : '')).join('');
+      productionStore.recordCircuitSuccess('anthropic');
+      return {
+        text,
+        actualModel: entry.label,
+        actualProvider: PROVIDER_NAMES.anthropic,
+        durationMs: Date.now() - start,
+        failoverOccurred: false,
+        usage: this.anthropicUsage(data),
+        contentBlocks,
+        stopReason: typeof data?.stop_reason === 'string' ? data.stop_reason : 'end_turn',
+      };
+    } catch (err: any) {
+      console.warn(`Anthropic tool call failed for ${entry.label}:`, err?.message);
+      productionStore.recordCircuitFailure('anthropic');
+      throw new UpstreamUnavailableError('Anthropic', `${entry.label} returned an error (${err?.message || 'timeout'})`);
+    }
+  }
+
+  private anthropicUsage(data: any): TokenUsage | undefined {
+    const inputTokens = typeof data?.usage?.input_tokens === 'number' ? data.usage.input_tokens : 0;
+    const outputTokens = typeof data?.usage?.output_tokens === 'number' ? data.usage.output_tokens : 0;
+    return inputTokens > 0 || outputTokens > 0
+      ? { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens }
+      : undefined;
+  }
+
+  private async postAnthropic(apiKey: string, payload: Record<string, unknown>, timeoutMs: number): Promise<any> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error(`Anthropic HTTP error ${res.status}`);
+      const data = await res.json();
+      if (data?.stop_reason === 'refusal') throw new Error('Anthropic refused the request');
+      return data;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   private async call(
     entry: CatalogEntry,
-    messages: ChatMessage[]
+    messages: ChatMessage[],
+    options: DispatchOptions = {}
   ): Promise<{ text: string; usage?: TokenUsage }> {
     const apiKey = providerKey(entry.provider) as string;
     let result: { text: string; usage?: TokenUsage };
@@ -185,7 +294,7 @@ export class MultiProviderDispatcher {
         result = await this.callGemini(entry.apiModel, messages);
         break;
       case 'anthropic':
-        result = await this.callAnthropic(apiKey, entry.apiModel, messages);
+        result = await this.callAnthropic(apiKey, entry.apiModel, messages, options.maxTokens);
         break;
       case 'openai':
         result = await this.callOpenAICompatible('https://api.openai.com/v1/chat/completions', 'OpenAI', 12000, apiKey, entry.apiModel, messages);
@@ -251,11 +360,9 @@ export class MultiProviderDispatcher {
   private async callAnthropic(
     apiKey: string,
     model: string,
-    messages: ChatMessage[]
+    messages: ChatMessage[],
+    maxTokens?: number
   ): Promise<{ text: string; usage?: TokenUsage }> {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-
     const systemParts = messages.filter((m) => m.role === 'system').map((m) => m.content);
     const system = systemParts.length > 0 ? systemParts.join('\n\n') : undefined;
 
@@ -277,31 +384,12 @@ export class MultiProviderDispatcher {
       merged.unshift({ role: 'user', content: '' });
     }
 
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: 2048,
-          system,
-          messages: merged,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok) {
-        throw new Error(`Anthropic HTTP error ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (data?.stop_reason === 'refusal') {
-        throw new Error('Anthropic refused the request');
-      }
+    const data = await this.postAnthropic(
+      apiKey,
+      { model, max_tokens: maxTokens && maxTokens > 0 ? Math.floor(maxTokens) : 2048, system, messages: merged },
+      maxTokens && maxTokens > 2048 ? 60000 : 12000
+    );
+    {
       // Current Claude models may open with a thinking block: keep only the text blocks.
       const blocks: any[] = Array.isArray(data?.content) ? data.content : [];
       const text = blocks
@@ -320,8 +408,6 @@ export class MultiProviderDispatcher {
           : undefined;
 
       return { text, usage };
-    } finally {
-      clearTimeout(timeout);
     }
   }
 

@@ -259,4 +259,88 @@ test('Anthropic Compatible Virtual Proxy Contract Suite (/v1/messages & /message
       delete process.env.OPENAI_API_KEY;
     }
   });
+  await t.test('POST /v1/messages passes tools through to Anthropic and returns tool_use (JSON and SSE)', async () => {
+    let upstream: any = null;
+    globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+      if (url.toString().includes('api.anthropic.com')) {
+        upstream = JSON.parse(init!.body as string);
+        return new Response(
+          JSON.stringify({
+            id: 'msg_upstream',
+            type: 'message',
+            role: 'assistant',
+            content: [
+              { type: 'text', text: 'Reading the file.' },
+              { type: 'tool_use', id: 'toolu_01', name: 'Read', input: { file_path: '/repo/a.ts' } },
+            ],
+            stop_reason: 'tool_use',
+            usage: { input_tokens: 90, output_tokens: 30 },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      return originalFetch(url, init);
+    }) as any;
+    process.env.ANTHROPIC_API_KEY = 'mock-anthropic-key';
+
+    const tools = [{ name: 'Read', description: 'Read a file', input_schema: { type: 'object', properties: { file_path: { type: 'string' } } } }];
+    const body = {
+      model: 'entropos-auto',
+      max_tokens: 8192,
+      system: [{ type: 'text', text: 'You are Claude Code.' }],
+      tools,
+      tool_choice: { type: 'auto' },
+      messages: [
+        { role: 'user', content: [{ type: 'text', text: 'Open a.ts' }] },
+        { role: 'assistant', content: [{ type: 'tool_use', id: 'toolu_00', name: 'Read', input: { file_path: '/repo/b.ts' } }] },
+        { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'toolu_00', content: 'export const b = 1;' }] },
+      ],
+    };
+    const headers = { 'Content-Type': 'application/json', 'x-api-key': ctx.workspaceKey };
+
+    try {
+      const res = await fetch(`${ctx.baseUrl}/v1/messages`, { method: 'POST', headers, body: JSON.stringify(body) });
+      assert.strictEqual(res.status, 200);
+      const data = await res.json();
+      assert.strictEqual(data.stop_reason, 'tool_use');
+      assert.strictEqual(data.content[1].type, 'tool_use');
+      assert.deepStrictEqual(data.content[1].input, { file_path: '/repo/a.ts' });
+      assert.deepStrictEqual(upstream.tools, tools);
+      assert.deepStrictEqual(upstream.tool_choice, { type: 'auto' });
+      assert.strictEqual(upstream.max_tokens, 8192);
+      assert.deepStrictEqual(upstream.messages, body.messages);
+      assert.ok(!JSON.stringify(data).includes('shannonEntropyBits'));
+
+      const sse = await fetch(`${ctx.baseUrl}/v1/messages`, { method: 'POST', headers, body: JSON.stringify({ ...body, stream: true }) });
+      assert.strictEqual(sse.status, 200);
+      const raw = await sse.text();
+      assert.ok(raw.includes('"type":"tool_use","id":"toolu_01","name":"Read"'), 'SSE must open a tool_use block');
+      assert.ok(raw.includes('input_json_delta'), 'SSE must stream tool input');
+      assert.ok(raw.includes('"stop_reason":"tool_use"'), 'SSE must end with stop_reason tool_use');
+    } finally {
+      delete process.env.ANTHROPIC_API_KEY;
+    }
+  });
+
+  await t.test('POST /v1/messages with tools returns 503 (no fabricated answer) when Anthropic is unavailable', async () => {
+    const saved: Record<string, string | undefined> = {};
+    for (const k of ['GEMINI_API_KEY', 'ANTHROPIC_API_KEY']) { saved[k] = process.env[k]; delete process.env[k]; }
+    process.env.OPENAI_API_KEY = 'mock-openai-key';
+    globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+      if (url.toString().includes('api.openai.com')) throw new Error('tool turns must not fall back to OpenAI');
+      return originalFetch(url, init);
+    }) as any;
+    try {
+      const res = await fetch(`${ctx.baseUrl}/v1/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': ctx.workspaceKey },
+        body: JSON.stringify({ max_tokens: 100, tools: [{ name: 'Read', input_schema: { type: 'object' } }], messages: [{ role: 'user', content: 'hi' }] }),
+      });
+      assert.strictEqual(res.status, 503);
+      assert.strictEqual((await res.json()).error.type, 'api_error');
+    } finally {
+      delete process.env.OPENAI_API_KEY;
+      for (const [k, v] of Object.entries(saved)) if (v) process.env[k] = v;
+    }
+  });
 });
