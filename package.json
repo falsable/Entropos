@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/falsable/Entropos.git"
+    "url": "git+https://github.com/falsable/Entropos.git"
   },
   "publishConfig": {
     "access": "public"
@@ -20,7 +20,7 @@
   ],
   "type": "module",
   "bin": {
-    "entropos": "./bin/entropos.js"
+    "entropos": "bin/entropos.js"
   },
   "scripts": {
     "dev": "tsx server.ts",
