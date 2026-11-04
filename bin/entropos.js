@@ -11,7 +11,7 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -63,14 +63,35 @@ if (hostIdx !== -1 && args[hostIdx + 1]) {
 }
 
 // Check if pre-bundled dist/server.js exists, otherwise run tsx server.ts
-const bundledServer = path.join(rootDir, 'dist', 'server.js');
+const distDir = path.join(rootDir, 'dist');
+const bundledServer = path.join(distDir, 'server.js');
 const sourceServer = path.join(rootDir, 'server.ts');
 
 if (fs.existsSync(bundledServer)) {
-  import(bundledServer).catch((err) => {
-    console.error('Failed to start Entropos server:', err);
-    process.exit(1);
-  });
+  if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = 'production';
+  }
+  Promise.all([import(pathToFileURL(bundledServer).href), import('express')])
+    .then(([mod, expressMod]) => {
+      const express = expressMod.default || expressMod;
+      const app = mod.app;
+      if (!app) {
+        throw new Error('Bundled server did not export Express app');
+      }
+      app.use(express.static(distDir));
+      app.get('*', (_req, res) => {
+        res.sendFile(path.join(distDir, 'index.html'));
+      });
+      const port = Number(process.env.PORT || 3000);
+      const host = process.env.HOST || '127.0.0.1';
+      app.listen(port, host, () => {
+        console.log(`Entropos Server running on http://${host}:${port}`);
+      });
+    })
+    .catch((err) => {
+      console.error('Failed to start Entropos server:', err);
+      process.exit(1);
+    });
 } else {
   const tsxBin = path.join(rootDir, 'node_modules', '.bin', process.platform === 'win32' ? 'tsx.cmd' : 'tsx');
   const child = spawn(tsxBin, [sourceServer, ...args], {
