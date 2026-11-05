@@ -161,7 +161,7 @@ Other MCP tools (`get_optimal_model`, `check_savings`) never spend and are not b
 
 `src/server/storage.ts` uses an embedded **SQLite WAL** engine (`node:sqlite` at `data/entropos.db`) for atomic $O(1)$ concurrent writes:
 
-- **Encryption at Rest (AES-256-GCM)**: Provider API secrets (`providerSecrets`) are encrypted at rest with a 12-byte random IV and authentication tag derived from `STORAGE_ENCRYPTION_KEY` or `data/.entropos_secret` (`0600`).
+- **Encryption at Rest (AES-256-GCM)**: Provider API secrets (`providerSecrets`) are encrypted at rest with a 12-byte random IV and authentication tag derived from `STORAGE_ENCRYPTION_KEY` or `.entropos_secret` in the data dir (`0600`; default `~/.entropos`, override with `ENTROPOS_DATA_DIR`).
 - **Retention Policies (`retentionPolicy` via `GET`/`POST /api/settings`)**:
 
 | Policy | Behavior | Target Use Case |

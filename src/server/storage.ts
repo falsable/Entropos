@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import {
   CustomRule,
@@ -19,8 +19,12 @@ import {
 } from '../types/router';
 import { DEFAULT_CUSTOM_RULES, INITIAL_MODEL_POSTERIORS, updatePosteriorWithFeedback as updateEnginePosterior } from '../lib/routerEngine';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.resolve(__dirname, '../../data');
+// Per-user data dir, never relative to the install: the bundle lives in node_modules/@falsable/entropos/dist,
+// so a path built from __dirname would end up beside the package and be lost on an npx cache cleanup.
+export function resolveDataDir(env: NodeJS.ProcessEnv = process.env, home: string = os.homedir()): string {
+  return path.resolve(env.ENTROPOS_DATA_DIR || path.join(home, '.entropos'));
+}
+const DATA_DIR = resolveDataDir();
 const DEFAULT_DB_PATH = path.resolve(DATA_DIR, 'entropos.db');
 
 export interface ProviderSecret {

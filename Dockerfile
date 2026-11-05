@@ -18,7 +18,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     PORT=3000 \
-    TRUST_PROXY=true
+    TRUST_PROXY=true \
+    ENTROPOS_DATA_DIR=/app/data
 
 # Install runtime dependencies only
 COPY package.json package-lock.json ./
