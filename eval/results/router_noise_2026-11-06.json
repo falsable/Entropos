@@ -1,0 +1,564 @@
+{
+ "repeats": 200,
+ "baselineCostPer1k": 0.0024,
+ "dev": {
+  "costRatioVsSonnet": {
+   "mean": 0.6732,
+   "sd": 0.0272,
+   "min": 0.6365,
+   "p2_5": 0.6365,
+   "p97_5": 0.7344,
+   "max": 0.7729
+  },
+  "underRoute": {
+   "mean": 0.2595,
+   "sd": 0.0559,
+   "min": 0.1,
+   "p2_5": 0.1,
+   "p97_5": 0.3,
+   "max": 0.3
+  },
+  "overRoute": {
+   "mean": 0.534,
+   "sd": 0.0525,
+   "min": 0.5,
+   "p2_5": 0.5,
+   "p97_5": 0.7,
+   "max": 0.7
+  }
+ },
+ "all": {
+  "costRatioVsSonnet": {
+   "mean": 0.5196,
+   "sd": 0.026,
+   "min": 0.4729,
+   "p2_5": 0.4792,
+   "p97_5": 0.5802,
+   "max": 0.6
+  },
+  "underRoute": {
+   "mean": 0.3923,
+   "sd": 0.0547,
+   "min": 0.15,
+   "p2_5": 0.25,
+   "p97_5": 0.45,
+   "max": 0.45
+  },
+  "overRoute": {
+   "mean": 0.3675,
+   "sd": 0.0542,
+   "min": 0.3,
+   "p2_5": 0.3,
+   "p97_5": 0.5,
+   "max": 0.55
+  }
+ },
+ "dev/cheap/short": {
+  "costRatioVsSonnet": {
+   "mean": 0.0994,
+   "sd": 0.0635,
+   "min": 0.0583,
+   "p2_5": 0.0583,
+   "p97_5": 0.3,
+   "max": 0.3
+  },
+  "underRoute": null,
+  "overRoute": {
+   "mean": 0.068,
+   "sd": 0.105,
+   "min": 0,
+   "p2_5": 0,
+   "p97_5": 0.4,
+   "max": 0.4
+  }
+ },
+ "heldout": {
+  "costRatioVsSonnet": {
+   "mean": 0.366,
+   "sd": 0.0404,
+   "min": 0.3094,
+   "p2_5": 0.3094,
+   "p97_5": 0.4635,
+   "max": 0.4906
+  },
+  "underRoute": {
+   "mean": 0.525,
+   "sd": 0.0884,
+   "min": 0.2,
+   "p2_5": 0.3,
+   "p97_5": 0.6,
+   "max": 0.6
+  },
+  "overRoute": {
+   "mean": 0.201,
+   "sd": 0.0967,
+   "min": 0.1,
+   "p2_5": 0.1,
+   "p97_5": 0.4,
+   "max": 0.5
+  }
+ },
+ "heldout/cheap/short": {
+  "costRatioVsSonnet": {
+   "mean": 0.138,
+   "sd": 0.0894,
+   "min": 0.0625,
+   "p2_5": 0.0625,
+   "p97_5": 0.3042,
+   "max": 0.425
+  },
+  "underRoute": null,
+  "overRoute": {
+   "mean": 0.125,
+   "sd": 0.1479,
+   "min": 0,
+   "p2_5": 0,
+   "p97_5": 0.4,
+   "max": 0.6
+  }
+ },
+ "dev/cheap/long": {
+  "costRatioVsSonnet": {
+   "mean": 1.028,
+   "sd": 0.0346,
+   "min": 1,
+   "p2_5": 1,
+   "p97_5": 1.1,
+   "max": 1.15
+  },
+  "underRoute": null,
+  "overRoute": {
+   "mean": 1,
+   "sd": 0,
+   "min": 1,
+   "p2_5": 1,
+   "p97_5": 1,
+   "max": 1
+  }
+ },
+ "heldout/cheap/long": {
+  "costRatioVsSonnet": {
+   "mean": 0.3018,
+   "sd": 0.0729,
+   "min": 0.25,
+   "p2_5": 0.25,
+   "p97_5": 0.4917,
+   "max": 0.4917
+  },
+  "underRoute": null,
+  "overRoute": {
+   "mean": 0.277,
+   "sd": 0.1181,
+   "min": 0.2,
+   "p2_5": 0.2,
+   "p97_5": 0.6,
+   "max": 0.6
+  }
+ },
+ "dev/strong/short": {
+  "costRatioVsSonnet": {
+   "mean": 0.6714,
+   "sd": 0.0635,
+   "min": 0.625,
+   "p2_5": 0.625,
+   "p97_5": 0.7958,
+   "max": 0.8792
+  },
+  "underRoute": {
+   "mean": 0.344,
+   "sd": 0.0944,
+   "min": 0,
+   "p2_5": 0.2,
+   "p97_5": 0.4,
+   "max": 0.4
+  },
+  "overRoute": null
+ },
+ "heldout/strong/short": {
+  "costRatioVsSonnet": {
+   "mean": 0.315,
+   "sd": 0.0863,
+   "min": 0.25,
+   "p2_5": 0.25,
+   "p97_5": 0.5042,
+   "max": 0.625
+  },
+  "underRoute": {
+   "mean": 0.699,
+   "sd": 0.1345,
+   "min": 0.2,
+   "p2_5": 0.4,
+   "p97_5": 0.8,
+   "max": 0.8
+  },
+  "overRoute": null
+ },
+ "dev/strong/long": {
+  "costRatioVsSonnet": {
+   "mean": 0.894,
+   "sd": 0.053,
+   "min": 0.8625,
+   "p2_5": 0.8625,
+   "p97_5": 1.0333,
+   "max": 1.1167
+  },
+  "underRoute": {
+   "mean": 0.175,
+   "sd": 0.0663,
+   "min": 0,
+   "p2_5": 0,
+   "p97_5": 0.2,
+   "max": 0.2
+  },
+  "overRoute": null
+ },
+ "heldout/strong/long": {
+  "costRatioVsSonnet": {
+   "mean": 0.7093,
+   "sd": 0.0627,
+   "min": 0.675,
+   "p2_5": 0.675,
+   "p97_5": 0.9167,
+   "max": 0.9292
+  },
+  "underRoute": {
+   "mean": 0.351,
+   "sd": 0.0972,
+   "min": 0,
+   "p2_5": 0.2,
+   "p97_5": 0.4,
+   "max": 0.4
+  },
+  "overRoute": null
+ },
+ "flip": {
+  "dev": {
+   "prompts": 20,
+   "flippingPrompts": 17,
+   "meanModalShare": 0.9107
+  },
+  "heldout": {
+   "prompts": 20,
+   "flippingPrompts": 19,
+   "meanModalShare": 0.9035
+  }
+ },
+ "perPrompt": [
+  {
+   "id": "cheap/short#1",
+   "split": "dev",
+   "shares": {
+    "Gemini 3.8 Flash": 0.93,
+    "GPT-6.1 Sol": 0.07
+   }
+  },
+  {
+   "id": "cheap/short#2",
+   "split": "dev",
+   "shares": {
+    "Gemini 3.8 Flash": 0.885,
+    "GPT-6.1 Sol": 0.115
+   }
+  },
+  {
+   "id": "cheap/short#3",
+   "split": "dev",
+   "shares": {
+    "Gemini 3.8 Flash": 1
+   }
+  },
+  {
+   "id": "cheap/short#4",
+   "split": "dev",
+   "shares": {
+    "Gemini 3.8 Flash": 1
+   }
+  },
+  {
+   "id": "cheap/short#5",
+   "split": "dev",
+   "shares": {
+    "Gemini 3.8 Flash": 0.845,
+    "GPT-6.1 Sol": 0.155
+   }
+  },
+  {
+   "id": "cheap/short#6",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.86,
+    "GPT-6.1 Sol": 0.14
+   }
+  },
+  {
+   "id": "cheap/short#7",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.855,
+    "GPT-6.1 Sol": 0.145
+   }
+  },
+  {
+   "id": "cheap/short#8",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.86,
+    "GPT-6.1 Sol": 0.14
+   }
+  },
+  {
+   "id": "cheap/short#9",
+   "split": "heldout",
+   "shares": {
+    "GPT-6.1 Sol": 0.08,
+    "Gemini 3.8 Flash": 0.92
+   }
+  },
+  {
+   "id": "cheap/short#10",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.88,
+    "GPT-6.1 Sol": 0.12
+   }
+  },
+  {
+   "id": "cheap/long#1",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.905,
+    "GPT-6 Astra": 0.095
+   }
+  },
+  {
+   "id": "cheap/long#2",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.89,
+    "GPT-6 Astra": 0.11
+   }
+  },
+  {
+   "id": "cheap/long#3",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.86,
+    "GPT-6 Astra": 0.14
+   }
+  },
+  {
+   "id": "cheap/long#4",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.91,
+    "GPT-6 Astra": 0.09
+   }
+  },
+  {
+   "id": "cheap/long#5",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.875,
+    "GPT-6 Astra": 0.125
+   }
+  },
+  {
+   "id": "cheap/long#6",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.925,
+    "GPT-6.1 Sol": 0.075
+   }
+  },
+  {
+   "id": "cheap/long#7",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.885,
+    "GPT-6.1 Sol": 0.115
+   }
+  },
+  {
+   "id": "cheap/long#8",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.91,
+    "GPT-6.1 Sol": 0.09
+   }
+  },
+  {
+   "id": "cheap/long#9",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.895,
+    "GPT-6.1 Sol": 0.105
+   }
+  },
+  {
+   "id": "cheap/long#10",
+   "split": "heldout",
+   "shares": {
+    "GPT-6 Astra": 0.105,
+    "Claude Sonnet 5.5": 0.895
+   }
+  },
+  {
+   "id": "strong/short#1",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.975,
+    "DeepSeek R1": 0.025
+   }
+  },
+  {
+   "id": "strong/short#2",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.895,
+    "GPT-6 Astra": 0.105
+   }
+  },
+  {
+   "id": "strong/short#3",
+   "split": "dev",
+   "shares": {
+    "Gemini 3.8 Flash": 0.87,
+    "GPT-6.1 Sol": 0.13
+   }
+  },
+  {
+   "id": "strong/short#4",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.92,
+    "GPT-6 Astra": 0.08
+   }
+  },
+  {
+   "id": "strong/short#5",
+   "split": "dev",
+   "shares": {
+    "Gemini 3.8 Flash": 0.85,
+    "GPT-6.1 Sol": 0.15
+   }
+  },
+  {
+   "id": "strong/short#6",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.865,
+    "GPT-6.1 Sol": 0.135
+   }
+  },
+  {
+   "id": "strong/short#7",
+   "split": "heldout",
+   "shares": {
+    "DeepSeek R1": 0.03,
+    "Claude Sonnet 5.5": 0.97
+   }
+  },
+  {
+   "id": "strong/short#8",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.86,
+    "GPT-6.1 Sol": 0.14
+   }
+  },
+  {
+   "id": "strong/short#9",
+   "split": "heldout",
+   "shares": {
+    "GPT-6.1 Sol": 0.105,
+    "Gemini 3.8 Flash": 0.895
+   }
+  },
+  {
+   "id": "strong/short#10",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.875,
+    "GPT-6.1 Sol": 0.125
+   }
+  },
+  {
+   "id": "strong/long#1",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 1
+   }
+  },
+  {
+   "id": "strong/long#2",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.965,
+    "DeepSeek R1": 0.035
+   }
+  },
+  {
+   "id": "strong/long#3",
+   "split": "dev",
+   "shares": {
+    "Gemini 3.8 Flash": 0.875,
+    "GPT-6.1 Sol": 0.125
+   }
+  },
+  {
+   "id": "strong/long#4",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.865,
+    "GPT-6 Astra": 0.135
+   }
+  },
+  {
+   "id": "strong/long#5",
+   "split": "dev",
+   "shares": {
+    "Claude Sonnet 5.5": 0.9,
+    "GPT-6 Astra": 0.1
+   }
+  },
+  {
+   "id": "strong/long#6",
+   "split": "heldout",
+   "shares": {
+    "Claude Sonnet 5.5": 1
+   }
+  },
+  {
+   "id": "strong/long#7",
+   "split": "heldout",
+   "shares": {
+    "Claude Sonnet 5.5": 0.985,
+    "DeepSeek R1": 0.015
+   }
+  },
+  {
+   "id": "strong/long#8",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.87,
+    "GPT-6.1 Sol": 0.13
+   }
+  },
+  {
+   "id": "strong/long#9",
+   "split": "heldout",
+   "shares": {
+    "Claude Sonnet 5.5": 0.98,
+    "DeepSeek R1": 0.02
+   }
+  },
+  {
+   "id": "strong/long#10",
+   "split": "heldout",
+   "shares": {
+    "Gemini 3.8 Flash": 0.885,
+    "GPT-6.1 Sol": 0.115
+   }
+  }
+ ]
+}
