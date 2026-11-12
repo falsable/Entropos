@@ -3,7 +3,7 @@
   "engines": [
     {
       "language": "typescript",
-      "image": "a2dlc-engine-ts:0.1",
+      "image": "a2dlc-engine-ts:0.4",
       "paths": [
         "src/**/*.ts"
       ],
