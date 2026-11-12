@@ -24,7 +24,7 @@
     "image": "a2dlc-tests-node:entropos",
     "paths": ["tests/**/*.test.ts"],
     "source_paths": ["server.ts", "src/**/*.ts"],
-    "command": "rm -rf node_modules && ln -s /opt/app/node_modules node_modules && node --import tsx --test --experimental-test-coverage --test-reporter=junit --test-reporter-destination=\"$A2DLC_JUNIT\" --test-reporter=lcov --test-reporter-destination=\"$A2DLC_COVERAGE\" $A2DLC_TESTS",
+    "command": "rm -rf node_modules && ln -s /opt/app/node_modules node_modules && npm run build >/dev/null && node --import tsx --test --experimental-test-coverage --test-reporter=junit --test-reporter-destination=\"$A2DLC_JUNIT\" --test-reporter=lcov --test-reporter-destination=\"$A2DLC_COVERAGE\" $A2DLC_TESTS",
     "timeout_s": 600
   }
 }
