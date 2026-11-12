@@ -43,7 +43,8 @@ interface PublicDecision {
 const SAFE_REASON_PREFIXES = ['Matched Custom Rule', 'Failover Event', 'Adaptive Circuit Breaker'];
 
 export function publicReason(decision: PublicDecision): string {
-  if (SAFE_REASON_PREFIXES.some((prefix) => decision.reason.startsWith(prefix))) return decision.reason;
+  const reason = typeof decision.reason === 'string' ? decision.reason : '';
+  if (SAFE_REASON_PREFIXES.some((prefix) => reason.startsWith(prefix))) return reason;
   return `Routed to ${decision.selectedModel} \u00b7 ${publicTier(decision.entropy?.inferredComplexity)} workload`;
 }
 
